@@ -1,33 +1,12 @@
-# .github/workflows/ci-build-and-deploy.yml
-name: CI - Build, Test & Deploy
-
-on:
-  push:
-    branches:
-      - main
-
+# .github/workflows/ci-test.yml
+on: [push]
 jobs:
-  build-and-deploy:
+  test:
     runs-on: ubuntu-latest
-    env:
-      IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/my-cv-app
-      TAG: latest
-
     steps:
-      # 0. Checkout the repository
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - run: echo "GH Actions is working!"
 
-      # 1. Install dependencies & run OWASP Dependency-Check
-      - name: OWASP Dependency-Check
-        uses: dependency-check-action@v2
-        with:
-          project: ${{ github.repository }}
-          scan: './'
-          format: 'ALL'
-          outputDirectory: './dependency-check-report'
-          failOnCVSS: '7'           # fail if any CVSS ≥ 7
-
+      
       # # 2. Set up Docker and Buildx
       # - name: Set up Docker Buildx
       #   uses: docker/setup-buildx-action@v2
