@@ -1,0 +1,75 @@
+# .github/workflows/ci-build-and-deploy.yml
+name: CI - Build, Test & Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/my-app
+      TAG: latest
+
+    steps:
+      # 0. Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 1. Install dependencies & run OWASP Dependency-Check
+      - name: OWASP Dependency-Check
+        uses: dependency-check-action@v2
+        with:
+          project: ${{ github.repository }}
+          scan: './'
+          format: 'ALL'
+          outputDirectory: './dependency-check-report'
+          failOnCVSS: '7'           # fail if any CVSS ≥ 7
+
+      # # 2. Set up Docker and Buildx
+      # - name: Set up Docker Buildx
+      #   uses: docker/setup-buildx-action@v2
+
+      # # (Optional) Log in to Docker Hub
+      # - name: Log in to Docker Hub
+      #   uses: docker/login-action@v2
+      #   with:
+      #     username: ${{ secrets.DOCKERHUB_USERNAME }}
+      #     password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # # 3. Build the Docker image (Dockerfile at repo root)
+      # - name: Build Docker image
+      #   run: |
+      #     docker build \
+      #       --file dockerfile \
+      #       --tag $IMAGE_NAME:$TAG \
+      #       .
+
+      # # 4. Wait 30 seconds for the container to be ready
+      # - name: Spin up container and wait
+      #   run: |
+      #     docker run -d --name smoke-test -p 8080:80 $IMAGE_NAME:$TAG
+      #     sleep 30
+
+      # # 5. Smoke-test the running container
+      # - name: Smoke test via curl
+      #   run: |
+      #     curl --fail http://localhost:8801/ || (docker logs smoke-test && exit 1)
+
+      # - name: Tear down smoke-test container
+      #   if: always()
+      #   run: docker rm -f smoke-test
+
+      # # 6. Sign the image with Cosign
+      # - name: Sign Docker image
+      #   uses: sigstore/cosign-action@v2
+      #   with:
+      #     image: $IMAGE_NAME:$TAG
+      #     key: ${{ secrets.COSIGN_KEY }}
+
+      # # 7. Push the image to the registry
+      # - name: Push Docker image
+      #   run: |
+      #     docker push $IMAGE_NAME:$TAG
