@@ -10,7 +10,7 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     env:
-      IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/my-app
+      IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/my-cv-app
       TAG: latest
 
     steps:
